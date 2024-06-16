@@ -180,8 +180,6 @@ module Amazonka.Env.Hooks
     -- * Functions to use with the ones above
     noHook,
     noHook_,
-    addHook,
-    addHook_,
     addAWSRequestHook,
     addAWSRequestHook_,
     addHookFor,
@@ -195,6 +193,10 @@ module Amazonka.Env.Hooks
     -- * Building 'Hooks'
     addLoggingHooks,
     noHooks,
+
+    -- * Deprecated functions
+    addHook,
+    addHook_,
   )
 where
 
@@ -439,18 +441,6 @@ noHook _ _ = pure
 noHook_ :: Hook_ a -> Hook_ a
 noHook_ _ _ _ = pure ()
 
--- | Unconditionally add a @'Hook' a@ to the chain of hooks. If you
--- need to do something with specific request types, you want
--- 'addHookFor', instead.
-addHook :: (Typeable a) => Hook a -> Hook a -> Hook a
-addHook newHook oldHook env = oldHook env >=> newHook env
-
--- | Unconditionally add a @'Hook_' a@ to the chain of hooks. If you
--- need to do something with specific request types, you want
--- 'addHookFor_', instead.
-addHook_ :: (Typeable a) => Hook_ a -> Hook_ a -> Hook_ a
-addHook_ newHook oldHook env a = oldHook env a *> newHook env a
-
 -- | Like 'addHook', adds an unconditional hook, but it also captures
 -- the @'AWSRequest' a@ constraint. Useful for handling every AWS
 -- request type in a generic way.
@@ -610,3 +600,33 @@ noHooks =
       response = \_ _ -> pure (),
       error = \_ _ -> pure ()
     }
+
+{-# DEPRECATED
+  addHook
+  "Please use a hook specific function,`addHook` will be removed in version 2.2."
+  #-}
+
+-- | Starting with version 2.1 you are provided with functions specialized to
+-- each hook type and harder to misuse, you should be using them instead of
+-- `addHook` and `addHook_`.
+--
+-- Unconditionally add a @'Hook' a@ to the chain of hooks. If you
+-- need to do something with specific request types, you want
+-- 'addHookFor', instead.
+addHook :: (Typeable a) => Hook a -> Hook a -> Hook a
+addHook newHook oldHook env = oldHook env >=> newHook env
+
+{-# DEPRECATED
+  addHook_
+  "Please use a hook specific function, `addHook_` will be removed in version 2.2."
+  #-}
+
+-- | Starting with version 2.1 you are provided with functions specialized to
+-- each hook type and harder to misuse, you should be using them instead of
+-- `addHook` and `addHook_`.
+--
+-- Unconditionally add a @'Hook_' a@ to the chain of hooks. If you
+-- need to do something with specific request types, you want
+-- 'addHookFor_', instead.
+addHook_ :: (Typeable a) => Hook_ a -> Hook_ a -> Hook_ a
+addHook_ newHook oldHook env a = oldHook env a *> newHook env a
